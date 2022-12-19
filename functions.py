@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 from copy import deepcopy
-
+from funcions2 import calcular_valors
 def printimg(nom,img):
 
     cv.imshow(nom,img)
@@ -328,24 +328,28 @@ def maximin14(imgname, yi, yf):
     #funcio del xavi max i min
     return maxx, minn
 
-def avgmaximinx(particions,p1,p2,p3,p4):
+def avgmaximinlong(particions,escala,p1,p2,p3,p4):
+    resultat = [ [0,0],[0,0],[0,0]]
 
-    imgname = "a"
+
+    imgname = "kurvg"
     for i in range(len(particions)):
         if(particions[i][0] != imgname):
             imgname = particions[i][0]
             img = cv.imread(cv.samples.findFile(imgname))
-            img = img[0:int(0.7*len(img))  ,0:len(img[0]) - 1 ]
-            img = cv.cvtColor(img,cv.COLOR_RGB2GRAY)
 
+            img = cv.cvtColor(img,cv.COLOR_RGB2GRAY)
+            img = img[0:findlowerbound(img)  ,0:len(img[0]) - 1 ]
             imgb1 = cv.blur(img, (10,10))
 
             ret,paret2 = cv.threshold(imgb1,p2,255,cv.THRESH_BINARY)
-
-            #paret2 = netejar_foto(paret2, 10)
-            paret2 = nomesralladalt(paret2)
             #printimg("p2",paret2)
+
+            paret2 = netejar_foto(paret2, 10)
+            paret2 = nomesralladalt(paret2)
+
             ret,paret3 = cv.threshold(imgb1,p3,255,cv.THRESH_BINARY)
+            #printimg("p3",paret3)
             #printimg("paretsdins",paretsdins)
             paret3 = netejar_foto(paret3, 10)
             paret3 = nomesrallabaix(paret3)
@@ -366,11 +370,16 @@ def avgmaximinx(particions,p1,p2,p3,p4):
 #            printimg2(("originsl","4parets","pfora", "pdins"),(img,imgparets,paretsfora,paretsdins))
             printimg2(("originsl","4parets"),(img,imgparets))
 
- #funcio del xavi max i min
-        maxx += maxxx
-        minn += minnn
+        res = calcular_valors(imgparets, particions[i][1],particions[i][2], "long", escala)
+        resultat[0][0] += res[0][0]/len(particions)
+        resultat[0][1] += res[0][1]/len(particions)
+        resultat[1][1] += res[1][1]/len(particions)
+        resultat[1][0] += res[1][0]/len(particions)
+        resultat[2][0] += res[2][0]/len(particions)
+        resultat[2][1] += res[2][1]/len(particions)
 
-    return maxx/len(particions), minn/len(particions)
+
+    return resultat
 
 def nomesralladalt(img2):
     img = deepcopy(img2)
@@ -410,3 +419,22 @@ def nomesrallabaix(img2):
             elif(b): img[x][y] = 0
 
     return img
+
+def findlowerbound(img):
+    tros = 0
+    x = len(img) -1
+    y = 0
+    x2 = x - 10
+
+    while(img[x][y] != 255 and x-x2 < 150):
+        if (img[x2][y] == 255):
+            x = x2
+            x2 = x2 -10
+        x2 -= 1
+
+    return x2
+
+
+
+
+
